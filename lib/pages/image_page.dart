@@ -82,34 +82,78 @@ class _CreatePostPageState extends State<CreatePostPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Post'),
+        backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Create a New Post',
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple),
+            ),
+            SizedBox(height: 20),
             TextField(
               controller: titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+              decoration: InputDecoration(
+                hintText: 'Enter post title',
+                labelText: 'Title',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.deepPurple),
+                ),
+              ),
             ),
+            SizedBox(height: 20),
             TextField(
               controller: descriptionController,
-              decoration: InputDecoration(labelText: 'Description'),
-            ),
-            const SizedBox(height: 20),
-            if (selectedImage != null)
-              Image.file(
-                File(selectedImage!.path),
-                height: 200,
-                width: 200,
+              decoration: InputDecoration(
+                hintText: 'Enter post description',
+                labelText: 'Description',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.deepPurple),
+                ),
               ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: pickImage,
-              child: const Text('Select Image'),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
+            if (selectedImage != null)
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(selectedImage!.path),
+                    height: 200,
+                    width: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: pickImage,
+              icon: Icon(Icons.photo_library, color: Colors.white),
+              label: Center(
+                  child: Text('Select Image',
+                      style: TextStyle(color: Colors.white))),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            SizedBox(height: 20),
             isLoading
-                ? CircularProgressIndicator()
+                ? Center(child: CircularProgressIndicator())
                 : ElevatedButton(
                     onPressed: () async {
                       if (selectedImage != null) {
@@ -117,7 +161,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
                           isLoading = true;
                         });
                         try {
-                          debugPrint('Uploading post...');
                           await uploadPost(
                             titleController.text,
                             descriptionController.text,
@@ -135,7 +178,17 @@ class _CreatePostPageState extends State<CreatePostPage> {
                         _showSnackBar('Please select an image');
                       }
                     },
-                    child: const Text('Upload Post'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      padding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Center(
+                      child: Text('Upload Post',
+                          style: TextStyle(color: Colors.white)),
+                    ),
                   ),
           ],
         ),
