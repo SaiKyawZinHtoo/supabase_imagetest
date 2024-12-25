@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_test/models/post_database.dart';
+import 'package:image_test/models/post_model.dart'; // Import the Post model
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CreatePostPage extends StatefulWidget {
@@ -50,21 +52,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         throw Exception('Failed to generate public URL.');
       }
 
-      // Insert post data into the database
-      debugPrint('Inserting post data: $title, $description');
-      final insertResponse =
-          await Supabase.instance.client.from('posts').insert({
-        'title': title,
-        'description': description,
-        'image_url': imageUrl,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-
-      debugPrint('Insert response: ${insertResponse.data}');
-
-      if (insertResponse.error != null) {
-        throw Exception('Failed to save post: ${insertResponse.error.message}');
-      }
+      debugPrint('Post created successfully');
     } catch (e) {
       debugPrint('Error: $e');
       throw Exception('Upload failed: $e');

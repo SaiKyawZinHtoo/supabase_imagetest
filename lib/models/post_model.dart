@@ -1,12 +1,12 @@
 class Post {
-  final int id;
+  int? id;
   final String title;
   final String description;
   final String imageUrl;
   final DateTime createdAt;
 
   Post({
-    required this.id,
+    this.id,
     required this.title,
     required this.description,
     required this.imageUrl,
@@ -27,7 +27,6 @@ class Post {
   // Convert database Map to Dart object
   factory Post.fromJson(Map<String, dynamic> map) {
     return Post(
-      id: map['id'],
       title: map['title'],
       description: map['description'],
       imageUrl: map['image_url'],
