@@ -28,6 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
+        foregroundColor: Colors.white,
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         actions: [

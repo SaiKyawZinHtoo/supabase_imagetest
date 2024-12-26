@@ -30,7 +30,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   // Upload image to Supabase storage
   Future<void> uploadImage(XFile imageFile) async {
-    final bucket = Supabase.instance.client.storage.from('posts');
+    final bucket = Supabase.instance.client.storage.from('images');
     final imageName = DateTime.now().toIso8601String() + '.jpg';
 
     try {
@@ -72,34 +72,13 @@ class _CreatePostPageState extends State<CreatePostPage> {
     );
   }
 
-  // Create a post (with title, description, and image URL)
-  Future<void> createPost(String title, String description) async {
-    if (uploadedImageUrl == null) {
-      _showSnackBar('Please upload an image first');
-      return;
-    }
-
-    try {
-      // Simulate post creation (e.g., save to database)
-      debugPrint('Creating post: $title');
-      debugPrint('Description: $description');
-      debugPrint('Image URL: $uploadedImageUrl');
-
-      // Here you would insert the post into the database or backend.
-      // For now, we'll just print it out.
-
-      _showSnackBar('Post created successfully');
-    } catch (e) {
-      _showSnackBar('Failed to create post: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Post'),
         backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -193,27 +172,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   child: Text('Upload Image',
                       style: TextStyle(color: Colors.white))),
             ),
-            SizedBox(height: 20),
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    onPressed: () async {
-                      await createPost(
-                        titleController.text,
-                        descriptionController.text,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      padding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Center(
-                        child: Text('Create Post',
-                            style: TextStyle(color: Colors.white))),
-                  ),
           ],
         ),
       ),
