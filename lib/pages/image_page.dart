@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_test/pages/postPage.dart';
+import 'package:image_test/pages/post_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CreatePostPage extends StatefulWidget {
@@ -70,7 +72,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
       _showSnackBar('Post created successfully!');
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PostsPage()),
+        MaterialPageRoute(
+          builder: (context) => PostsPage(),
+        ),
       );
     } catch (e) {
       debugPrint('Error: $e');
@@ -203,20 +207,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class PostsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Posts'),
-      ),
-      body: Center(
-        child: Text('Your posts will appear here.'),
       ),
     );
   }
