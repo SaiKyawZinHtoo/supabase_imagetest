@@ -13,7 +13,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
   final TextEditingController descriptionController = TextEditingController();
   XFile? selectedImage;
   bool isLoading = false;
-  String? uploadedImageUrl;
 
   // Pick an image from the gallery
   Future<void> pickImage() async {
@@ -28,40 +27,58 @@ class _CreatePostPageState extends State<CreatePostPage> {
     }
   }
 
-  // Upload image to Supabase storage
-  Future<void> uploadImage(XFile imageFile) async {
-    final bucket = Supabase.instance.client.storage.from('images');
-    final imageName = DateTime.now().toIso8601String() + '.jpg';
+  // Upload image and save post
+  Future<void> uploadImageAndSavePost(
+      XFile imageFile, String title, String description) async {
+    setState(() {
+      isLoading = true;
+    });
 
     try {
-      debugPrint('Uploading image: $imageName');
-      // Upload image to storage
-      final response = await bucket.upload(imageName, File(imageFile.path));
+      // Step 1: Upload the image to Supabase storage
+      final bucket = Supabase.instance.client.storage.from('images');
+      final imageName = DateTime.now().toIso8601String() + '.jpg';
 
-      debugPrint('Upload response: $response');
+      final uploadResponse =
+          await bucket.upload(imageName, File(imageFile.path));
 
-      if (response.isEmpty) {
-        throw Exception('Image upload failed: Response was empty.');
+      if (uploadResponse == null || uploadResponse.isEmpty) {
+        throw Exception('Image upload failed.');
       }
 
-      // Get public URL for the uploaded image
-      final imageUrlResponse = await bucket.getPublicUrl(imageName);
-      final imageUrl = imageUrlResponse;
-
-      debugPrint('Generated public URL: $imageUrl');
+      // Get the public URL of the uploaded image
+      final imageUrl = bucket.getPublicUrl(imageName);
+      debugPrint('Image URL: $imageUrl');
 
       if (imageUrl == null || imageUrl.isEmpty) {
         throw Exception('Failed to generate public URL.');
       }
 
-      setState(() {
-        uploadedImageUrl = imageUrl;
+      // Step 2: Save the post to the database
+      final saveResponse = await Supabase.instance.client.from('posts').insert({
+        'title': title,
+        'description': description,
+        'imageUrl': imageUrl,
       });
+      debugPrint('Save response: $saveResponse');
 
-      _showSnackBar('Image uploaded successfully: $imageUrl');
+      ///အဲ့အပိုင်းမှာကိုကြတော့ ငါလုပ်ထားတာကြတော့ စစ်ထားတာပေါ့၊ တာပေမဲ့ဖြုတ်ပြီးတော့ထည့်လိုက်မည်ဆိုရင်တော့ရပြီးတော့ ထည့်လိုက်မည်ဆိုရင် null ဖြစ်နေတာပေါ့ တာပေမဲ့ ြဖုတ်လိုက်ရင်တော့ အဆင်ပြေတယ် ဖြစ်နေတယ် အဲ့တာကြောင့်မလို့ အဲ့အပိုင်းမှာကိုကြတော့ နည်းနည်းစစ်ဖို့ကိုလိုအုန်းမည်
+      // if (saveResponse == null || saveResponse.isEmpty) {
+      //   throw Exception('Failed to save post.');
+      // }
+
+      _showSnackBar('Post created successfully!');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PostsPage()),
+      );
     } catch (e) {
       debugPrint('Error: $e');
-      _showSnackBar('Failed to upload image: $e');
+      _showSnackBar('Error: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -134,46 +151,72 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 ),
               ),
             SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: pickImage,
-              icon: Icon(Icons.photo_library, color: Colors.white),
-              label: Center(
-                  child: Text('Select Image',
-                      style: TextStyle(color: Colors.white))),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: pickImage,
+                icon: Icon(Icons.photo_library, color: Colors.white),
+                label: Center(
+                    child: Text('Select Image',
+                        style: TextStyle(color: Colors.white))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedImage != null) {
-                  setState(() {
-                    isLoading = true;
-                  });
-                  await uploadImage(selectedImage!);
-                  setState(() {
-                    isLoading = false;
-                  });
-                } else {
-                  _showSnackBar('Please select an image');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+            Center(
+              child: ElevatedButton(
+                onPressed: isLoading
+                    ? null // Disable the button while loading
+                    : () async {
+                        if (selectedImage == null) {
+                          _showSnackBar('Please select an image');
+                          return;
+                        }
+
+                        if (titleController.text.isEmpty ||
+                            descriptionController.text.isEmpty) {
+                          _showSnackBar('Please fill in all fields');
+                          return;
+                        }
+
+                        await uploadImageAndSavePost(
+                          selectedImage!,
+                          titleController.text,
+                          descriptionController.text,
+                        );
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: isLoading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text('Upload Image and Save Post',
+                        style: TextStyle(color: Colors.white)),
               ),
-              child: Center(
-                  child: Text('Upload Image',
-                      style: TextStyle(color: Colors.white))),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class PostsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Posts'),
+      ),
+      body: Center(
+        child: Text('Your posts will appear here.'),
       ),
     );
   }

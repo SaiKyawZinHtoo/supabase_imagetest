@@ -27,6 +27,7 @@ class Post {
   // Convert database Map to Dart object
   factory Post.fromJson(Map<String, dynamic> map) {
     return Post(
+      id: map['id'],
       title: map['title'],
       description: map['description'],
       imageUrl: map['image_url'],
