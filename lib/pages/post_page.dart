@@ -4,12 +4,14 @@ class PostCard extends StatelessWidget {
   final String title;
   final String description;
   final DateTime postTime;
+  final String imageUrl;
 
   const PostCard({
     Key? key,
     required this.title,
     required this.description,
     required this.postTime,
+    required this.imageUrl,
   }) : super(key: key);
 
   @override
@@ -23,43 +25,37 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Time Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   _formatTime(postTime),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
-                const Icon(
-                  Icons.access_time,
-                  size: 16,
-                  color: Colors.grey,
-                ),
+                const Icon(Icons.access_time, size: 16, color: Colors.grey),
               ],
             ),
             const SizedBox(height: 8),
-            // Title Section
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            // Description Section
             Text(
               description,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                imageUrl,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
           ],
         ),
@@ -67,7 +63,6 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  // Helper function to format the time
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
