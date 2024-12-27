@@ -25,6 +25,7 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Post Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -32,22 +33,51 @@ class PostCard extends StatelessWidget {
                   _formatTime(postTime),
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
-                const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.grey),
+                  onSelected: (value) {
+                    // Handle menu actions
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'Edit',
+                      child: Text('Edit'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'Delete',
+                      child: Text('Delete'),
+                    ),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+
+            // Title
             Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 8),
+
+            // Description
             Text(
               description,
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+                height: 1.5,
+              ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+
+            // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
@@ -55,6 +85,59 @@ class PostCard extends StatelessWidget {
                 height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Like, Comment, Share Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildActionButton(
+                  icon: Icons.thumb_up_alt_outlined,
+                  label: 'Like',
+                  context: context,
+                ),
+                _buildActionButton(
+                  icon: Icons.comment_outlined,
+                  label: 'Comment',
+                  context: context,
+                ),
+                _buildActionButton(
+                  icon: Icons.share_outlined,
+                  label: 'Share',
+                  context: context,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required BuildContext context,
+  }) {
+    return InkWell(
+      onTap: () {
+        // Handle button actions
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
