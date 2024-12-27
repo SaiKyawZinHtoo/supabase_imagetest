@@ -53,6 +53,7 @@ class _PostsPageState extends State<PostsPage> {
                   itemBuilder: (context, index) {
                     final post = posts[index];
                     return PostCard(
+                      postId: post['id'],
                       title: post['title'],
                       description: post['description'],
                       postTime: DateTime.parse(post['created_at']),

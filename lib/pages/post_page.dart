@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PostCard extends StatelessWidget {
+  final int postId;
   final String title;
   final String description;
   final DateTime postTime;
@@ -8,11 +10,38 @@ class PostCard extends StatelessWidget {
 
   const PostCard({
     Key? key,
+    required this.postId,
     required this.title,
     required this.description,
     required this.postTime,
     required this.imageUrl,
   }) : super(key: key);
+
+  Future<void> _deletePost(BuildContext context, String postId) async {
+    final supabaseClient = Supabase.instance.client;
+
+    try {
+      final response =
+          await supabaseClient.from('posts').delete().eq('id', postId).select();
+
+      if (response.isEmpty) {
+        // Handle case where the post is not found
+        _showSnackBar(context, 'Post not found or already deleted.');
+      } else {
+        // Post deleted successfully
+        _showSnackBar(context, 'Post deleted successfully!');
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      _showSnackBar(context, 'An unexpected error occurred: $e');
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +65,9 @@ class PostCard extends StatelessWidget {
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Colors.grey),
                   onSelected: (value) {
-                    // Handle menu actions
+                    if (value == 'Delete') {
+                      _deletePost(context, postId.toString());
+                    }
                   },
                   itemBuilder: (context) => [
                     const PopupMenuItem(
