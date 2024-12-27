@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   final int postId;
   final String title;
   final String description;
@@ -17,6 +17,13 @@ class PostCard extends StatelessWidget {
     required this.imageUrl,
   }) : super(key: key);
 
+  @override
+  _PostCardState createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  bool _isDeleted = false;
+
   Future<void> _deletePost(BuildContext context, String postId) async {
     final supabaseClient = Supabase.instance.client;
 
@@ -25,14 +32,15 @@ class PostCard extends StatelessWidget {
           await supabaseClient.from('posts').delete().eq('id', postId).select();
 
       if (response.isEmpty) {
-        // Handle case where the post is not found
         _showSnackBar(context, 'Post not found or already deleted.');
       } else {
-        // Post deleted successfully
         _showSnackBar(context, 'Post deleted successfully!');
+        // Update the UI by setting _isDeleted to true
+        setState(() {
+          _isDeleted = true;
+        });
       }
     } catch (e) {
-      // Handle unexpected errors
       _showSnackBar(context, 'An unexpected error occurred: $e');
     }
   }
@@ -45,6 +53,10 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isDeleted) {
+      return const SizedBox.shrink(); // Hide the card if it is deleted
+    }
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
@@ -59,14 +71,14 @@ class PostCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _formatTime(postTime),
+                  _formatTime(widget.postTime),
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Colors.grey),
                   onSelected: (value) {
                     if (value == 'Delete') {
-                      _deletePost(context, postId.toString());
+                      _deletePost(context, widget.postId.toString());
                     }
                   },
                   itemBuilder: (context) => [
@@ -86,7 +98,7 @@ class PostCard extends StatelessWidget {
 
             // Title
             Text(
-              title,
+              widget.title,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -97,7 +109,7 @@ class PostCard extends StatelessWidget {
 
             // Description
             Text(
-              description,
+              widget.description,
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black54,
@@ -112,7 +124,7 @@ class PostCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
-                imageUrl,
+                widget.imageUrl,
                 height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
