@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_test/pages/postPage.dart';
-import 'package:image_test/pages/post_page.dart';
+import 'package:image_test/pages/create_post_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CreatePostPage extends StatefulWidget {
