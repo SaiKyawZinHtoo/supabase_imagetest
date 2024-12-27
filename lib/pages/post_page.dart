@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_test/pages/edit_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PostCard extends StatefulWidget {
@@ -35,7 +36,6 @@ class _PostCardState extends State<PostCard> {
         _showSnackBar(context, 'Post not found or already deleted.');
       } else {
         _showSnackBar(context, 'Post deleted successfully!');
-        // Update the UI by setting _isDeleted to true
         setState(() {
           _isDeleted = true;
         });
@@ -54,7 +54,7 @@ class _PostCardState extends State<PostCard> {
   @override
   Widget build(BuildContext context) {
     if (_isDeleted) {
-      return const SizedBox.shrink(); // Hide the card if it is deleted
+      return const SizedBox.shrink();
     }
 
     return Card(
@@ -76,9 +76,26 @@ class _PostCardState extends State<PostCard> {
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Colors.grey),
-                  onSelected: (value) {
+                  onSelected: (value) async {
                     if (value == 'Delete') {
                       _deletePost(context, widget.postId.toString());
+                    } else if (value == 'Edit') {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditPostPage(
+                            postId: widget.postId,
+                            title: widget.title,
+                            description: widget.description,
+                            imageUrl: widget.imageUrl,
+                          ),
+                        ),
+                      );
+                      if (result == true) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Post updated!')),
+                        );
+                      }
                     }
                   },
                   itemBuilder: (context) => [
@@ -123,12 +140,23 @@ class _PostCardState extends State<PostCard> {
             // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                widget.imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: widget.imageUrl.isNotEmpty
+                  ? Image.network(
+                      widget.imageUrl,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.broken_image,
+                        size: 100,
+                        color: Colors.grey,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.image_not_supported,
+                      size: 100,
+                      color: Colors.grey,
+                    ),
             ),
             const SizedBox(height: 16),
 
