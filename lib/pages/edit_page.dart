@@ -221,9 +221,7 @@ class _EditPostPageState extends State<EditPostPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('Save Changes'),
+                    child: const Text('Save Changes'),
                   ),
                 ],
               ),

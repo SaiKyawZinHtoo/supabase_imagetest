@@ -76,6 +76,10 @@ class _PostCardState extends State<PostCard> {
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Colors.grey),
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   onSelected: (value) async {
                     if (value == 'Delete') {
                       _deletePost(context, widget.postId.toString());
@@ -99,13 +103,37 @@ class _PostCardState extends State<PostCard> {
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'Edit',
-                      child: Text('Edit'),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Edit',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'Delete',
-                      child: Text('Delete'),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Delete',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
