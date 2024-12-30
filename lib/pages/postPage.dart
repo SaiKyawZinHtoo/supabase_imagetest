@@ -36,6 +36,13 @@ class _PostsPageState extends State<PostsPage> {
     }
   }
 
+  Future<void> _refreshPosts() async {
+    setState(() {
+      isLoading = true;
+    });
+    await fetchPosts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,21 +53,24 @@ class _PostsPageState extends State<PostsPage> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : posts.isEmpty
-              ? const Center(child: Text("No posts available"))
-              : ListView.builder(
-                  itemCount: posts.length,
-                  itemBuilder: (context, index) {
-                    final post = posts[index];
-                    return PostCard(
-                      postId: post['id'],
-                      title: post['title'],
-                      description: post['description'],
-                      postTime: DateTime.parse(post['created_at']),
-                      imageUrl: post['imageUrl'],
-                    );
-                  },
-                ),
+          : RefreshIndicator(
+              onRefresh: _refreshPosts,
+              child: posts.isEmpty
+                  ? const Center(child: Text("No posts available"))
+                  : ListView.builder(
+                      itemCount: posts.length,
+                      itemBuilder: (context, index) {
+                        final post = posts[index];
+                        return PostCard(
+                          postId: post['id'],
+                          title: post['title'],
+                          description: post['description'],
+                          postTime: DateTime.parse(post['created_at']),
+                          imageUrl: post['imageUrl'],
+                        );
+                      },
+                    ),
+            ),
     );
   }
 }
