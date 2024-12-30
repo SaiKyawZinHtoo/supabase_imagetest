@@ -22,16 +22,33 @@ class EditPostPage extends StatefulWidget {
 }
 
 class _EditPostPageState extends State<EditPostPage> {
+  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   File? _selectedImage;
   bool _isLoading = false;
+
+  BoxDecoration _imageContainerStyle = BoxDecoration(
+    color: Colors.grey[200],
+    border: Border.all(color: Colors.grey),
+    borderRadius: BorderRadius.circular(12),
+  );
 
   @override
   void initState() {
     super.initState();
     _titleController.text = widget.title;
     _descriptionController.text = widget.description;
+  }
+
+  void _updateStyle() {
+    setState(() {
+      _imageContainerStyle = BoxDecoration(
+        color: Colors.blue[50],
+        border: Border.all(color: Colors.blue, width: 2),
+        borderRadius: BorderRadius.circular(12),
+      );
+    });
   }
 
   Future<void> _pickImage() async {
@@ -41,6 +58,7 @@ class _EditPostPageState extends State<EditPostPage> {
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
+        _updateStyle();
       });
     }
   }
@@ -68,6 +86,8 @@ class _EditPostPageState extends State<EditPostPage> {
   }
 
   Future<void> _updatePost(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
       _isLoading = true;
     });
@@ -115,24 +135,38 @@ class _EditPostPageState extends State<EditPostPage> {
   }
 
   Widget _buildImagePreview() {
-    if (_selectedImage != null) {
-      return Image.file(
-        _selectedImage!,
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Container(
         height: 200,
         width: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else {
-      return Image.network(
-        widget.imageUrl,
-        height: 200,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.broken_image, size: 100);
-        },
-      );
-    }
+        decoration: _imageContainerStyle,
+        child: _selectedImage != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  _selectedImage!,
+                  fit: BoxFit.cover,
+                ),
+              )
+            : widget.imageUrl.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      widget.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.broken_image, size: 50),
+                        );
+                      },
+                    ),
+                  )
+                : const Center(
+                    child: Icon(Icons.add_photo_alternate, size: 50),
+                  ),
+      ),
+    );
   }
 
   @override
@@ -143,36 +177,64 @@ class _EditPostPageState extends State<EditPostPage> {
       ),
       body: Stack(
         children: [
-          Padding(
+          SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  maxLines: 4,
-                ),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: _buildImagePreview(),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : () => _updatePost(context),
-                  child: const Text('Save Changes'),
-                ),
-              ],
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Title required'
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    maxLines: 4,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Description required'
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildImagePreview(),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : () => _updatePost(context),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Save Changes'),
+                  ),
+                ],
+              ),
             ),
           ),
           if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
         ],
       ),
