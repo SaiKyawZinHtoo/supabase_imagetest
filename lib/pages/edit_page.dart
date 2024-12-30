@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditPostPage extends StatefulWidget {
@@ -23,6 +26,8 @@ class _EditPostPageState extends State<EditPostPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _imageUrlController = TextEditingController();
+  File? _selectedImage;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -32,8 +37,54 @@ class _EditPostPageState extends State<EditPostPage> {
     _imageUrlController.text = widget.imageUrl;
   }
 
-  Future<void> _updatePost(BuildContext context) async {
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<String?> _uploadImage(File image) async {
     final supabaseClient = Supabase.instance.client;
+
+    try {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final filePath =
+          await supabaseClient.storage.from('images').upload(fileName, image);
+
+      if (filePath.isNotEmpty) {
+        final publicUrl =
+            supabaseClient.storage.from('images').getPublicUrl(filePath);
+        return publicUrl;
+      } else {
+        throw Exception('File upload failed');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to upload image: $e')),
+      );
+      return null;
+    }
+  }
+
+  Future<void> _updatePost(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final supabaseClient = Supabase.instance.client;
+    String? imageUrl = widget.imageUrl;
+
+    if (_selectedImage != null) {
+      final uploadedUrl = await _uploadImage(_selectedImage!);
+      if (uploadedUrl != null) {
+        imageUrl = uploadedUrl;
+      }
+    }
 
     try {
       final response = await supabaseClient
@@ -41,7 +92,7 @@ class _EditPostPageState extends State<EditPostPage> {
           .update({
             'title': _titleController.text,
             'description': _descriptionController.text,
-            'imageUrl': _imageUrlController.text,
+            'imageUrl': imageUrl,
           })
           .eq('id', widget.postId)
           .select();
@@ -50,7 +101,7 @@ class _EditPostPageState extends State<EditPostPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Post updated successfully!')),
         );
-        Navigator.pop(context, true); // Pass true to indicate success
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Post not found or update failed.')),
@@ -60,6 +111,10 @@ class _EditPostPageState extends State<EditPostPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update post: $e')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -69,32 +124,52 @@ class _EditPostPageState extends State<EditPostPage> {
       appBar: AppBar(
         title: const Text('Edit Post'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  maxLines: 4,
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: _selectedImage == null
+                      ? Image.network(
+                          widget.imageUrl,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.file(
+                          _selectedImage!,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : () => _updatePost(context),
+                  child: const Text('Save Changes'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
-              maxLines: 4,
+          ),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
             ),
-            // const SizedBox(height: 16),
-            // TextField(
-            //   controller: _imageUrlController,
-            //   decoration: const InputDecoration(labelText: 'Image URL'),
-            // ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => _updatePost(context),
-              child: const Text('Save Changes'),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
