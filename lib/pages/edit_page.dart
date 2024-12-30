@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -25,7 +24,6 @@ class EditPostPage extends StatefulWidget {
 class _EditPostPageState extends State<EditPostPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _imageUrlController = TextEditingController();
   File? _selectedImage;
   bool _isLoading = false;
 
@@ -34,7 +32,6 @@ class _EditPostPageState extends State<EditPostPage> {
     super.initState();
     _titleController.text = widget.title;
     _descriptionController.text = widget.description;
-    _imageUrlController.text = widget.imageUrl;
   }
 
   Future<void> _pickImage() async {
@@ -53,17 +50,16 @@ class _EditPostPageState extends State<EditPostPage> {
 
     try {
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final filePath =
+      final response =
           await supabaseClient.storage.from('images').upload(fileName, image);
 
-      if (filePath.isNotEmpty) {
-        final publicUrl =
-            supabaseClient.storage.from('images').getPublicUrl(filePath);
-        return publicUrl;
+      if (response.isNotEmpty) {
+        return supabaseClient.storage.from('images').getPublicUrl(fileName);
       } else {
         throw Exception('File upload failed');
       }
     } catch (e) {
+      debugPrint('Failed to upload image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to upload image: $e')),
       );
@@ -118,6 +114,27 @@ class _EditPostPageState extends State<EditPostPage> {
     }
   }
 
+  Widget _buildImagePreview() {
+    if (_selectedImage != null) {
+      return Image.file(
+        _selectedImage!,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Image.network(
+        widget.imageUrl,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.broken_image, size: 100);
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,19 +160,7 @@ class _EditPostPageState extends State<EditPostPage> {
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: _pickImage,
-                  child: _selectedImage == null
-                      ? Image.network(
-                          widget.imageUrl,
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : Image.file(
-                          _selectedImage!,
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                  child: _buildImagePreview(),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
