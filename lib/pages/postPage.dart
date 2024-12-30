@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'; // Ensure this import points to your PostCard widget
-import 'package:image_test/pages/create_post_page.dart';
+import 'package:image_test/pages/postCard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PostsPage extends StatefulWidget {
