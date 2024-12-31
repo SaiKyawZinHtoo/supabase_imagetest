@@ -24,6 +24,9 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool _isDeleted = false;
+  int _likeCount = 0;
+  bool _isCommentSectionVisible = false;
+  final TextEditingController _commentController = TextEditingController();
 
   Future<void> _deletePost(BuildContext context, String postId) async {
     final supabaseClient = Supabase.instance.client;
@@ -194,21 +197,60 @@ class _PostCardState extends State<PostCard> {
               children: [
                 _buildActionButton(
                   icon: Icons.thumb_up_alt_outlined,
-                  label: 'Like',
+                  label: 'Like ($_likeCount)',
                   context: context,
+                  onTap: () {
+                    setState(() {
+                      _likeCount++;
+                    });
+                  },
                 ),
                 _buildActionButton(
                   icon: Icons.comment_outlined,
                   label: 'Comment',
                   context: context,
+                  onTap: () {
+                    setState(() {
+                      _isCommentSectionVisible = !_isCommentSectionVisible;
+                    });
+                  },
                 ),
                 _buildActionButton(
                   icon: Icons.share_outlined,
                   label: 'Share',
                   context: context,
+                  onTap: () {
+                    // Share functionality here
+                  },
                 ),
               ],
             ),
+
+            // Comment Section
+            if (_isCommentSectionVisible) ...[
+              const Divider(),
+              TextField(
+                controller: _commentController,
+                decoration: InputDecoration(
+                  hintText: 'Write a comment...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () {
+                  // Handle comment submission
+                  _commentController.clear();
+                  setState(() {
+                    _isCommentSectionVisible = false;
+                  });
+                  _showSnackBar(context, 'Comment added!');
+                },
+                child: const Text('Post Comment'),
+              ),
+            ],
           ],
         ),
       ),
@@ -219,11 +261,10 @@ class _PostCardState extends State<PostCard> {
     required IconData icon,
     required String label,
     required BuildContext context,
+    required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: () {
-        // Handle button actions
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
