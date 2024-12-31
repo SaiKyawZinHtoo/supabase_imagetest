@@ -51,6 +51,7 @@ class _PostsPageState extends State<PostsPage> {
         foregroundColor: Colors.white,
         backgroundColor: Colors.deepPurple,
       ),
+      endDrawer: EndDrawerButton(),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
