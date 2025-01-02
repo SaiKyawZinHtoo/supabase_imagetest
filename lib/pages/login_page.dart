@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:getwidget/components/button/gf_button.dart';
 import 'package:getwidget/components/button/gf_icon_button.dart';
 import 'package:getwidget/shape/gf_icon_button_shape.dart';
 import 'package:getwidget/types/gf_button_type.dart';
@@ -18,26 +17,37 @@ class _LoginPageState extends State<LoginPage> {
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
+
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void login() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
       try {
         await authService.signInWithEmail(email, password);
-        // Navigate to the next page or home
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login successful!")),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Login successful!")),
+          );
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error: $e")),
           );
         }
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -101,13 +111,25 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: "Password",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -120,54 +142,49 @@ class _LoginPageState extends State<LoginPage> {
                   },
                 ),
                 const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     GFIconButton(
-                      onPressed: () {
-                        // Add Facebook login logic here
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.facebook),
                       shape: GFIconButtonShape.pills,
                       type: GFButtonType.outline,
                     ),
                     const SizedBox(width: 10),
                     GFIconButton(
-                      onPressed: () {
-                        // Add Google login logic here
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.g_mobiledata),
                       shape: GFIconButtonShape.pills,
                       type: GFButtonType.outline,
                     ),
                     const SizedBox(width: 10),
                     GFIconButton(
-                      onPressed: () {
-                        // Add Twitter login logic here
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.alternate_email),
                       shape: GFIconButtonShape.pills,
                       type: GFButtonType.outline,
                     ),
-                    const SizedBox(width: 10),
                   ],
                 ),
                 const SizedBox(height: 20),
