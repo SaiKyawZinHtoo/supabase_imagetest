@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:getwidget/components/button/gf_button.dart';
+import 'package:getwidget/components/button/gf_icon_button.dart';
+import 'package:getwidget/shape/gf_icon_button_shape.dart';
+import 'package:getwidget/types/gf_button_type.dart';
 import 'package:image_test/auth/auth_service.dart';
 import 'package:image_test/pages/register_page.dart';
 
@@ -129,9 +133,42 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: const Text(
                       "Login",
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GFIconButton(
+                      onPressed: () {
+                        // Add Facebook login logic here
+                      },
+                      icon: const Icon(Icons.facebook),
+                      shape: GFIconButtonShape.pills,
+                      type: GFButtonType.outline,
+                    ),
+                    const SizedBox(width: 10),
+                    GFIconButton(
+                      onPressed: () {
+                        // Add Google login logic here
+                      },
+                      icon: const Icon(Icons.g_mobiledata),
+                      shape: GFIconButtonShape.pills,
+                      type: GFButtonType.outline,
+                    ),
+                    const SizedBox(width: 10),
+                    GFIconButton(
+                      onPressed: () {
+                        // Add Twitter login logic here
+                      },
+                      icon: const Icon(Icons.alternate_email),
+                      shape: GFIconButtonShape.pills,
+                      type: GFButtonType.outline,
+                    ),
+                    const SizedBox(width: 10),
+                  ],
                 ),
                 const SizedBox(height: 20),
                 Center(
